@@ -1,36 +1,138 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>PIN Side-Channel Attack</title>
+  <title>PIN Side-Channel Attack - User Guide</title>
+  <style>
+    /* Just some spacing and readability */
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 20px auto;
+      line-height: 1.5;
+    }
+    input {
+      margin: 5px 0 15px 0;
+      padding: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 30px;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      border: 1px solid #ddd;
+    }
+    hr {
+      margin: 40px 0;
+    }
+  </style>
 </head>
 <body>
 
-<h2>Train Model</h2>
-<input type="file" id="file">
-<button onclick="train()">Train</button>
-<pre id="trainOut"></pre>
+<h1>PIN Side-Channel Attack Web Application</h1>
+
+<section id="train-section">
+  <h2>Train Model</h2>
+  <p>
+    To train the machine learning model that predicts PINs from sensor data, follow these steps:
+  </p>
+  <ol>
+    <li>
+      <strong>Select a training data file:</strong> Click the "Choose File" button below to browse and select a CSV file containing side-channel sensor readings (such as accelerometer and gyroscope data) labeled with the correct PIN.
+    </li>
+    <li>
+      <strong>Start training:</strong> After selecting your file, click the <em>Train</em> button to upload your data and begin the training process.
+    </li>
+    <li>
+      <strong>View results:</strong> The output area below will show you the response from the server, including training progress, status messages, or errors.
+    </li>
+  </ol>
+  <p>
+    <em>Note:</em> Make sure your file format matches the expected structure of the training data for accurate results.
+  </p>
+
+  <input type="file" id="file" aria-label="Select training data file">
+  <button onclick="train()">Train</button>
+  <pre id="trainOut" aria-live="polite" aria-atomic="true"></pre>
+</section>
 
 <hr>
 
-<h2>Predict Digit</h2>
-<div id="inputs"></div>
-<button onclick="predict()">Predict</button>
-<pre id="predOut"></pre>
+<section id="predict-section">
+  <h2>Predict Digit</h2>
+  <p>
+    Once your model is trained, you can predict PIN digits based on specific feature inputs extracted from side-channel data.
+  </p>
+  <ol>
+    <li>
+      <strong>Enter feature values:</strong> There are 6 fields below. These correspond to numeric sensor features (for example, accelerometer or gyroscope measurements) for the digit you want to predict.
+      Please enter one number in each field.
+    </li>
+    <li>
+      <strong>Make a prediction:</strong> Click the <em>Predict</em> button to send these feature values to the trained model.
+    </li>
+    <li>
+      <strong>See prediction result:</strong> The output area below will display the predicted digit and confidence scores as returned by the model.
+    </li>
+  </ol>
+ 
+
+  <div id="inputs" aria-label="Input fields for 6 feature values"></div>
+  <button onclick="predict()">Predict</button>
+  <pre id="predOut" aria-live="polite" aria-atomic="true"></pre>
+</section>
 
 <script>
 const API = "http://127.0.0.1:8000";
 
+// Dynamically create 6 input fields for features with labels
 const inputs = document.getElementById("inputs");
 for (let i = 1; i <= 6; i++) {
+  const wrapper = document.createElement("div");
+  wrapper.style.marginBottom = "10px";
+
+  const label = document.createElement("label");
+  label.textContent = "Feature " + i + ": ";
+  label.htmlFor = "feature" + i;
+  wrapper.appendChild(label);
+
   const el = document.createElement("input");
-  el.placeholder = "Feature " + i;
-  inputs.appendChild(el);
+  el.type = "number";
+  el.id = "feature" + i;
+  el.placeholder = "Enter numeric value for Feature " + i;
+  el.setAttribute("aria-describedby", "feature" + i + "-desc");
+
+  const desc = document.createElement("small");
+  desc.id = "feature" + i + "-desc";
+  desc.style.display = "block";
+  desc.style.color = "#555";
+  desc.style.marginTop = "2px";
+  desc.textContent = "Numeric sensor measurement corresponding to Feature " + i + ".";
+
+  wrapper.appendChild(el);
+  wrapper.appendChild(desc);
+
+  inputs.appendChild(wrapper);
 }
 
 async function train() {
   const f = document.getElementById("file").files[0];
+  if (!f) {
+    alert("Please select a training data file before clicking Train.");
+    return;
+  }
+
   const fd = new FormData();
   fd.append("file", f);
+
+  trainOut.textContent = "Uploading and training model, please wait...";
 
   const r = await fetch(`${API}/train`, {
     method: "POST",
@@ -41,7 +143,15 @@ async function train() {
 }
 
 async function predict() {
-  const features = [...inputs.children].map(i => Number(i.value));
+  const features = [...inputs.querySelectorAll("input")].map(i => Number(i.value));
+
+  // Check if any input is missing or NaN
+  if (features.some(f => isNaN(f))) {
+    alert("Please enter valid numeric values for all features before predicting.");
+    return;
+  }
+
+  predOut.textContent = "Sending features for prediction, please wait...";
 
   const r = await fetch(`${API}/predict`, {
     method: "POST",
