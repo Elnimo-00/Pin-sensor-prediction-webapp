@@ -44,13 +44,13 @@ Navigate to the backend directory and run the FastAPI server with auto-reload en
 
 cd backend
 
-uvicorn app:app --reload --port 9000
+uvicorn app:app --reload
 
 5. Access the web application
 
 Once the server is running, open your browser and go to:
 
-http://localhost:9000
+http://localhost:8000
 
 
 You should see the web interface for training models and analyzing PIN side-channel data.
