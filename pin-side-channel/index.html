@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PIN Side-Channel Attack</title>
+</head>
+<body>
+
+<h2>Train Model</h2>
+<input type="file" id="file">
+<button onclick="train()">Train</button>
+<pre id="trainOut"></pre>
+
+<hr>
+
+<h2>Predict Digit</h2>
+<div id="inputs"></div>
+<button onclick="predict()">Predict</button>
+<pre id="predOut"></pre>
+
+<script>
+const API = "http://127.0.0.1:8000";
+
+const inputs = document.getElementById("inputs");
+for (let i = 1; i <= 6; i++) {
+  const el = document.createElement("input");
+  el.placeholder = "Feature " + i;
+  inputs.appendChild(el);
+}
+
+async function train() {
+  const f = document.getElementById("file").files[0];
+  const fd = new FormData();
+  fd.append("file", f);
+
+  const r = await fetch(`${API}/train`, {
+    method: "POST",
+    body: fd
+  });
+
+  trainOut.textContent = JSON.stringify(await r.json(), null, 2);
+}
+
+async function predict() {
+  const features = [...inputs.children].map(i => Number(i.value));
+
+  const r = await fetch(`${API}/predict`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({features})
+  });
+
+  predOut.textContent = JSON.stringify(await r.json(), null, 2);
+}
+</script>
+
+</body>
+</html>
