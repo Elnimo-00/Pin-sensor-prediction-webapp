@@ -6,7 +6,7 @@ The project is inspired by and builds upon prior research in side-channel attack
 
 Disclaimer / Research Context
 
-This tool is intended for research, educational, and experimental purposes only. The effectiveness of side-channel PIN inference depends on numerous factors including sensor quality, device hardware, user behavior, and environmental noise. Real-world applicability may vary significantly. Use responsibly and with caution.
+This tool is intended for research, educational, and experimental purposes only. The effectiveness of side-channel PIN inference depends on numerous factors including sensor quality, device hardware, user behavior, and environmental noise. Real-world applicability may vary significantly.
 
 Getting Started — Installation & Usage
 
