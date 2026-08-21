@@ -1,84 +1,99 @@
-PIN Sensor Side-Channel Prediction Webapp
+# PIN Sensor Side-Channel Prediction Webapp
 
-This repository contains a web application for training and deploying machine learning models to analyze side-channel sensor data (such as accelerometer and gyroscope readings) to predict PIN inputs.
+A web application for training and deploying machine learning models that analyse
+side-channel sensor data, such as accelerometer and gyroscope readings, to predict PIN
+input.
 
-The project is inspired by and builds upon prior research in side-channel attacks leveraging motion sensors, such as the work from https://github.com/matteonerini/pin-side-channel-attacks.
+Builds on prior research into side-channel attacks using motion sensors, notably
+[matteonerini/pin-side-channel-attacks](https://github.com/matteonerini/pin-side-channel-attacks).
 
-Disclaimer / Research Context
+## How it works
 
-This tool is intended for research, educational, and experimental purposes only. The effectiveness of side-channel PIN inference depends on numerous factors including sensor quality, device hardware, user behavior, and environmental noise. Real-world applicability may vary significantly.
+```mermaid
+flowchart LR
+    CSV["sensor recordings<br/>accelerometer, gyroscope"]
+    UP["upload via the browser UI"]
+    DS["dataset.py<br/>load and preprocess"]
+    TR["model.py<br/>train, scale, persist"]
+    ART["models/model.joblib<br/>models/scaler.joblib"]
+    OUT(["POST /predict<br/>inferred digit"])
 
-Getting Started — Installation & Usage
+    CSV --> UP --> DS --> TR --> ART --> OUT
 
-Follow these instructions to run the project locally on your machine.
+    style OUT fill:#b4552d,stroke:#b4552d,color:#ffffff
+```
 
-1. Clone the repository
+## Research context
+
+This tool is intended for research, educational and experimental purposes only. The
+effectiveness of side-channel PIN inference depends on sensor quality, device hardware,
+user behaviour and environmental noise, so real-world applicability varies significantly.
+
+## Requirements
+
+- Python 3.7 or newer
+- FastAPI, uvicorn, numpy, pandas, scikit-learn, joblib, python-multipart
+  (all in `pin-side-channel/backend/requirements.txt`)
+
+## Installation
+
+```bash
 git clone https://github.com/Elnimo-00/Pin-sensor-prediction-webapp.git
-
 cd Pin-sensor-prediction-webapp
+```
 
-3. (Optional but recommended) Create and activate a Python virtual environment
+Create and activate a virtual environment.
 
-On macOS/Linux:
+On macOS or Linux:
 
+```bash
 python3 -m venv venv
-
 source venv/bin/activate
-
+```
 
 On Windows (PowerShell):
 
+```powershell
 python -m venv venv
-
 venv\Scripts\Activate.ps1
+```
 
-3. Install required dependencies
+Install the dependencies:
 
-The main dependencies are listed in the backend/requirements.txt file:
+```bash
+pip install -r pin-side-channel/backend/requirements.txt
+```
 
-pip install -r backend/requirements.txt
+## Usage
 
-4. Start the backend server
+Start the API from the backend directory:
 
-Navigate to the backend directory and run the FastAPI server with auto-reload enabled for development:
+```bash
+cd pin-side-channel/backend
+uvicorn main:app --reload
+```
 
-cd backend
+The API listens on `http://127.0.0.1:8000`. Open `pin-side-channel/index.html` in a
+browser to use the interface against it.
 
-uvicorn app:app --reload
+| Endpoint | Method | Description |
+| --- | --- | --- |
+| `/train` | POST | Upload a sensor dataset and train a model |
+| `/predict` | POST | Return the inferred digit for a sensor sample |
 
-5. Access the web application
+## Project structure
 
-Once the server is running, open your browser and go to:
+```
+pin-side-channel/
+├── index.html                  # browser UI
+└── backend/
+    ├── main.py                 # FastAPI app, /train and /predict
+    ├── dataset.py              # loading and preprocessing
+    ├── model.py                # training and inference
+    ├── models/                 # persisted model.joblib and scaler.joblib
+    └── requirements.txt
+```
 
-http://localhost:8000
+## Notes
 
-
-You should see the web interface for training models and analyzing PIN side-channel data.
-
-Project Structure Overview
-
-backend/ — Contains the FastAPI backend server code and ML model training logic.
-
-
-
-data/ — (Optional) Folder to store sensor datasets for training and evaluation.
-
-requirements.txt — Python dependencies for backend.
-
-Features
-
-Upload and preprocess motion sensor data (accelerometer and gyroscope).
-
-Train various ML models to infer PINs from side-channel signals.
-
-Evaluate model accuracy and performance metrics.
-
-Interactive web UI for ease of use.
-
-Notes
-
-Ensure your Python environment is 3.7+ for compatibility.
-
-Adjust port numbers or configuration in uvicorn command if needed.
-
-The project is under active development; contributions and feedback are welcome.
+The repository is under active development; contributions and feedback are welcome.
